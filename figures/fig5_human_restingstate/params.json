@@ -1,0 +1,9 @@
+{
+  "tr": 0.58,
+  "tr_per_subject": 1050,
+  "window_sec_similarity": 30,
+  "baseline_win": [-40, -15],
+  "t0": -10,
+  "t1": 15,
+  "n_random": 5000
+}
