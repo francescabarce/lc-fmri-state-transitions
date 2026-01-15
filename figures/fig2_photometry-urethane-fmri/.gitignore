@@ -1,0 +1,16 @@
+# outputs / figures
+outputs/
+**/outputs/
+*.png
+*.svg
+*.pdf
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# macOS
+.DS_Store
