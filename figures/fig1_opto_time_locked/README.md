@@ -2,8 +2,6 @@
 
 This folder contains the **exact analysis pipeline used to generate Figure 1** of the paper, starting from ROI-based optogenetic fMRI time-locked datasets and ending with SVD-derived spatial maps.
 
-The code here is **frozen for reproducibility** and intentionally minimal: it reproduces the paper figures, not a general-purpose toolbox.
-
 ---
 
 ## Overview of the pipeline
@@ -59,12 +57,6 @@ This script identifies a set of **core ROIs** that show a *consistent temporal r
    - `core_rois.txt`
    - `roi_similarity_scores.csv`
    - Optional NIfTI representations (if atlas inputs are provided)
-
-### Important methodological note
-
-Correlation is computed on **raw ROI timecourses**, which is *invariant to scale and offset*.  
-This means that *core ROI selection depends on temporal shape, not amplitude*, exactly as intended in the paper.
-
 ---
 
 ## Step 3 — SVD-based spatial map extraction
