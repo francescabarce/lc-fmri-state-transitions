@@ -141,8 +141,8 @@ fig5/outputs/
 ## Notes
 
 - Events too close to run boundaries may be partially padded with NaNs and excluded from AUC statistics if baseline windows contain missing values.  
-- The AUC metric reflects **magnitude**, not direction (i.e., it does not distinguish increases vs decreases).  
-- The null model uses random temporal windows, not phase-shuffling.
+- The AUC metric reflects **magnitude**, not direction.  
+- The null model uses random temporal windows.
 
 ---
 
