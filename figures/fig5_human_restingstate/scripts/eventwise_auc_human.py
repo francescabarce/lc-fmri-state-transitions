@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import mannwhitneyu
+from scipy.stats import mannwhitneyu, ks_2samp
 
 # ============================================================
 # Event-wise AUC: baseline correction + event-specific Z-score
@@ -127,9 +127,25 @@ def eventwise_auc_test_human(
             parts['cmeans'].set_color("black")
             parts['cmeans'].set_linewidth(2)
 
-        # significance for AUC
-        mw_p_auc = mannwhitneyu(real_auc, rand_auc, alternative="two-sided").pvalue
+        # Stats: Mann–Whitney U (non-parametric location shift) + KS (distribution difference)
+        mw_res = mannwhitneyu(real_auc, rand_auc, alternative="two-sided")
+        mw_u_auc = mw_res.statistic
+        mw_p_auc = mw_res.pvalue
+
+        ks_res = ks_2samp(real_auc, rand_auc, alternative="two-sided", mode="auto")
+        ks_d_auc = ks_res.statistic
+        ks_p_auc = ks_res.pvalue
+
+        # Print test results + basic descriptives
+        print(
+            f"  AUC stats | real n={len(real_auc)}, rand n={len(rand_auc)} | "
+            f"median(real)={np.median(real_auc):.4g}, median(rand)={np.median(rand_auc):.4g} | "
+            f"MW-U={mw_u_auc:.4g}, p={mw_p_auc:.4g} | KS-D={ks_d_auc:.4g}, p={ks_p_auc:.4g}"
+        )
+        print(f"Template {t+1} — AUC Mann-Whitney U p-value: {mw_p_auc:.4f}")
         
+        
+        # Significance stars based on MW p-value (kept for continuity with previous figures)
         if mw_p_auc < 0.001:
             sig_label_auc = "***"
         elif mw_p_auc < 0.01:
@@ -143,6 +159,8 @@ def eventwise_auc_test_human(
         y_pos_auc = y_max_auc + 0.1 * (y_max_auc - y_min_auc)
         plt.text(1.5, y_pos_auc, sig_label_auc, ha="center", va="bottom",
                  fontsize=20, fontweight="bold")
+        plt.text(1.5, y_pos_auc, f"MW p={mw_p_auc:.2g} | KS p={ks_p_auc:.2g}", ha="center", va="top",
+                 fontsize=10)
 
         plt.xticks([1,2], ["Real AUC","Random AUC"], fontsize=12)
         plt.ylabel("AUC(|z|)", fontsize=13)

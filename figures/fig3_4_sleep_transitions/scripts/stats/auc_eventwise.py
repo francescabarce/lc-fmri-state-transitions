@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import ks_2samp, mannwhitneyu
 import pandas as pd
 from typing import Optional
+import seaborn as sns
 
 plt.rcParams["svg.fonttype"] = "none"
 
@@ -195,19 +196,30 @@ def auc_eventwise(
                 )
                 rand_aucs[m].append(auc_val)
 
-        # Plot + stats per map
-        fig, axes = plt.subplots(1, n_maps, figsize=(4.5 * n_maps, 4), squeeze=False)
-        axes = axes.ravel()
+        # 1×n_maps paper-ready plot (match legacy styling)
+        sns.set_style("white")
+
+        fig, axes = plt.subplots(1, n_maps, figsize=(12, 4))
+
+        # If n_maps == 1, axes is a single Axes; make it indexable
+        if n_maps == 1:
+            axes = [axes]
 
         for m in range(n_maps):
-            r = np.asarray(real_aucs[m], dtype=float)
-            u = np.asarray(rand_aucs[m], dtype=float)
+            r = np.array(real_aucs[m], dtype=float)
+            u = np.array(rand_aucs[m], dtype=float)
 
-            r = r[np.isfinite(r)]
-            u = u[np.isfinite(u)]
+            r = r[~np.isnan(r)]
+            u = u[~np.isnan(u)]
 
-            if r.size == 0 or u.size == 0:
-                print(f"⚠️ {pat} Map{m+1}: empty real or null after NaN removal.")
+            print(
+                f"[DEBUG] {pat} Map{m+1}: real NaNs removed = {np.sum(np.isnan(real_aucs[m]))}, retained={len(r)}"
+            )
+            print(
+                f"[DEBUG] {pat} Map{m+1}: random NaNs removed = {np.sum(np.isnan(rand_aucs[m]))}, retained={len(u)}"
+            )
+
+            if len(r) == 0 or len(u) == 0:
                 continue
 
             ks_p = ks_2samp(r, u).pvalue
@@ -218,8 +230,8 @@ def auc_eventwise(
                 {
                     "transition": f"{pat[0]}to{pat[1]}",
                     "map": int(m + 1),
-                    "n_real": int(r.size),
-                    "n_null": int(u.size),
+                    "n_real": int(len(r)),
+                    "n_null": int(len(u)),
                     "ks_p": float(ks_p),
                     "mw_p": float(mw_p),
                     "cliffs_delta": float(d),
@@ -229,26 +241,64 @@ def auc_eventwise(
             )
 
             ax = axes[m]
+
+            # Paper colors (match legacy)
+            real_color = "#d95f02"  # warm red/orange
+            rand_color = "#7570b3"  # muted purple
+            edge = "black"
+
             combined = np.concatenate([r, u])
             bins = np.linspace(combined.min(), combined.max(), 25)
 
-            ax.hist(u, bins=bins, density=True, alpha=0.55, label="Null")
-            ax.hist(r, bins=bins, density=True, alpha=0.55, label="Real")
-            ax.set_title(
-                f"{pat} – Map {m+1}\nKS={ks_p:.1e} | MW={mw_p:.1e} | Δ={d:.3f}",
-                fontsize=11,
+            # --- Histograms ---
+            ax.hist(
+                u,
+                bins=bins,
+                density=True,
+                alpha=0.55,
+                color=rand_color,
+                edgecolor=edge,
+                linewidth=0.5,
+                label="Null",
             )
-            ax.set_xlabel("AUC(|z|)")
-            ax.set_ylabel("Density")
+            ax.hist(
+                r,
+                bins=bins,
+                density=True,
+                alpha=0.55,
+                color=real_color,
+                edgecolor=edge,
+                linewidth=0.5,
+                label="Real",
+            )
+
+            # --- KDE Curves ---
+            sns.kdeplot(u, color=rand_color, linewidth=2, ax=ax)
+            sns.kdeplot(r, color=real_color, linewidth=2, ax=ax)
+
+            # --- Title + annotation ---
+            ax.set_title(
+                f"{pat} – Map {m+1}\n" f"KS={ks_p:.1e} | MW={mw_p:.1e} | Δ={d:.3f}",
+                fontsize=11,
+                weight="bold",
+            )
+
+            # --- Axis styling ---
+            ax.set_xlabel("AUC(|z|)", fontsize=10)
+            ax.set_ylabel("Density", fontsize=10)
+            ax.tick_params(labelsize=9)
+
+            # Remove top/right frame (Nature style)
+            sns.despine(ax=ax)
+
+            # Legend
             ax.legend(frameon=False, fontsize=9)
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
 
         plt.tight_layout()
         out_fig = os.path.join(out_dir, f"AUC_EVENTWISE_{pat[0]}to{pat[1]}.svg")
-        plt.savefig(out_fig, dpi=300)
-        plt.close(fig)
-        print("📈 Saved:", out_fig)
+        plt.savefig(out_fig, dpi=300)  # high res
+        plt.close()
+        print("📈 Saved (paper-style):", out_fig)
 
     df = pd.DataFrame(results)
     df_path = os.path.join(out_dir, "auc_eventwise_stats.csv")

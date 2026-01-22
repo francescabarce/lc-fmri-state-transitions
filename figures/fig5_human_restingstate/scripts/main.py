@@ -1,6 +1,29 @@
+"""Fig. 5 (Human resting-state) — LC-peak–aligned similarity analysis
+
+This script loads a concatenated similarity time series (e.g., MapLC1/MapLC2 similarity values)
+and a list of LC peak indices, then:
+  1) extracts event-aligned windows around each LC peak (per subject)
+  2) plots the mean ± SEM similarity traces
+  3) runs an event-wise AUC(|z|) comparison against a subject-specific random-window null model
+
+Inputs are provided at runtime via CLI arguments,
+
+Example usage:
+    python main.py \
+      --similarity_csv /path/to/Awake_HUMAN_RS_MAP1_MAP2_regressionResult.csv \
+      --lc_peaks /path/to/LC_peaks.txt \
+      --output_dir ./outputs \
+      --params_json /path/to/params.json
+
+Minimal required inputs:
+  - similarity_csv: CSV/TSV with shape (T_total, n_maps)
+  - lc_peaks: text file with integer indices (global indices in the concatenated time series)
+
+"""
 # main_fig5_from_similarity.py
 import os
 import json
+import argparse
 import numpy as np
 import pandas as pd
 
@@ -11,20 +34,33 @@ from eventwise_auc_human import eventwise_auc_test_human
 
 def main():
     # -------------------------
-    # Paths (repo-relative)
+    # Runtime inputs (CLI)
     # -------------------------
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    #BASE_DIR = "/Users/barcelin/Documents/Codes/paper_figures/fig5/OUTPUT_eventwise_auc_from_similarity"
-    #INPUT_DIR = os.path.join(BASE_DIR, "inputs")
-    INPUT_DIR = '/Users/barcelin/Documents/Codes/paper_figures/data/Awake_HUMAN_RS/FunctionalConnectivity'
-    OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
+
+    parser = argparse.ArgumentParser(
+        description="LC-peak–aligned similarity analysis (Human RS): mean±SEM plots + event-wise AUC null test."
+    )
+    parser.add_argument("--similarity_csv", type=str, required=True,
+                        help="Path to CSV/TSV containing similarity time series (T_total x n_maps).")
+    parser.add_argument("--lc_peaks", type=str, required=True,
+                        help="Path to .txt file with integer LC peak indices (global indices in concatenated series).")
+    parser.add_argument("--output_dir", type=str, default=os.path.join(BASE_DIR, "outputs"),
+                        help="Output directory (default: ./outputs next to this script).")
+    parser.add_argument("--params_json", type=str, default=None,
+                        help="Optional params.json to override defaults (e.g., tr, window, baseline, n_random).")
+
+    args = parser.parse_args()
+
+    similarity_csv = args.similarity_csv
+    lc_peaks_path = args.lc_peaks
+    OUTPUT_DIR = args.output_dir
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    similarity_csv = os.path.join(INPUT_DIR, "/Users/barcelin/Documents/Codes/paper_figures/data/Awake_HUMAN_RS/Awake_HUMAN_RS_MAP1_MAP2_regressionResult.csv")
-    lc_peaks_path = os.path.join(INPUT_DIR, "/Users/barcelin/Documents/Codes/paper_figures/data/Awake_HUMAN_RS/LC_peaks.txt")
-
-    # Optional but recommended: a tiny JSON with params (so reviewers don't edit code)
-    params_json = os.path.join(INPUT_DIR, "params.json")
+    # If not provided, look for params.json next to the similarity file
+    params_json = args.params_json
+    if params_json is None:
+        params_json = os.path.join(os.path.dirname(os.path.abspath(similarity_csv)), "params.json")
 
     # -------------------------
     # Default params (your values)
@@ -38,6 +74,7 @@ def main():
         t1=15,
         n_random=5000,
     )
+    # Parameter precedence: defaults < params.json (if found) < CLI (explicit arguments above)
 
     if os.path.exists(params_json):
         with open(params_json, "r") as f:
