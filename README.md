@@ -67,14 +67,6 @@ Epochs are extracted as **±WIN_SECONDS** around each transition, where `WIN_SEC
 
 ## Installation
 
-Create an environment and install dependencies ( a `requirements.txt` is provided).
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
 Dependencies are lightweight (NumPy, SciPy, Pandas, Matplotlib); some figures may require optional neuroimaging libraries for NIfTI export.
 
 ---
