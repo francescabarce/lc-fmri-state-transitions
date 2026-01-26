@@ -1,8 +1,8 @@
-# Cross-species fMRI Signature of Locus Coeruleus-driven Brain State Transitions — Figure Code
+# A Conserved Locus Coeruleus fMRI Signature of Brain-State Transitions across Sleep, Anesthesia, and Wakefulness — Figure Code
 
 This repository contains the **analysis code used to generate the main figures** for the manuscript:
 
-**Cross-species fMRI Signature of Locus Coeruleus-driven Brain State Transitions**
+**A Conserved Locus Coeruleus fMRI Signature of Brain-State Transitions across Sleep, Anesthesia, and Wakefulness**
 
 The code is **figure-oriented and intentionally minimal**: each figure folder reproduces the corresponding analyses and plots from precomputed intermediate data (ROI time series, similarity traces, transition indices).
 
