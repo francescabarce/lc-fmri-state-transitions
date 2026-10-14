@@ -9,7 +9,7 @@ and saves a single paper-ready UMAP figure.
 
 Fixed settings (paper):
     - TR = 1.2 s
-    - window: 0 → +70 s post-peak
+    - window: 0 → +60/+70 s post-peak
     - UMAP: n_neighbors=3, min_dist=0.1, metric='euclidean'
 
 Example
@@ -31,8 +31,8 @@ from matplotlib.collections import LineCollection
 # === PAPER PARAMS (fixed) ===
 # ----------------------------
 TR = 1.2
-WINDOW_SEC = 60 --> it is possible to try with different windows
-#WINDOW_SEC = 70
+WINDOW_SEC = 70
+#WINDOW_SEC = 60  --> it is possible to try with different windows
 WINDOW_SAMPLES = int(WINDOW_SEC / TR)  # 70 / 1.2 ≈ 58 vol + 1
 SAMPLE_EVERY_SEC = 3
 SAMPLE_EVERY = int(SAMPLE_EVERY_SEC / TR)
