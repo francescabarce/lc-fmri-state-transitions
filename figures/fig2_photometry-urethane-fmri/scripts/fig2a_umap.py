@@ -31,7 +31,8 @@ from matplotlib.collections import LineCollection
 # === PAPER PARAMS (fixed) ===
 # ----------------------------
 TR = 1.2
-WINDOW_SEC = 70
+WINDOW_SEC = 60 --> it is possible to try with different windows
+#WINDOW_SEC = 70
 WINDOW_SAMPLES = int(WINDOW_SEC / TR)  # 70 / 1.2 ≈ 58 vol + 1
 SAMPLE_EVERY_SEC = 3
 SAMPLE_EVERY = int(SAMPLE_EVERY_SEC / TR)
